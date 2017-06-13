@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  
+  proxy:
+    
+    build: ./proxy/
+    
+    ports:
+      - 9620:9620 
+
+    depends_on:
+      - server
+    
+    external_links: 
+      - server
+    environment:
+      - PYTHONUNBUFFERED=0
+    volumes:
+      - ./log_directory:/proxy/log_directory
+
+  server:
+    build: ./echo_server/
