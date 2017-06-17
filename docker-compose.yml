@@ -7,7 +7,7 @@ services:
     build: ./proxy/
     
     ports:
-      - 9620:9620 
+      - 23:23 
 
     depends_on:
       - server
