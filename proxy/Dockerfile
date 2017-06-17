@@ -7,7 +7,7 @@ RUN mkdir -p proxy/log_directory
 
 COPY proxy.py proxy/proxy.py
 
-EXPOSE 9620
+EXPOSE 23
 
 ENTRYPOINT ["python2.7"]
 CMD ["/proxy/proxy.py"]
