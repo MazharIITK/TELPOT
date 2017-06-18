@@ -45,10 +45,8 @@ class ServerProtocol(protocol.Protocol):
 			self.fd = open(completeName, "a+")
 			data = attack_ip + ':' + str(attack_port) + '\n'
 			self.fd.write(data)		 
-		#print 'Connection made to', self.transport.getHost()
-        	#print 'from', self.transport.getPeer()
         	factory = protocol.ClientFactory()
-        	factory.protocol = ClientProtocol # setting the clientProtocol
+        	factory.protocol = ClientProtocol
         	factory.server = self
         	reactor.connectTCP(SERVER_ADDR, SERVER_PORT, factory)
 	
@@ -56,18 +54,18 @@ class ServerProtocol(protocol.Protocol):
 	elif(trigger==1):
 		return self.fd
  
-    # Client => Proxy
+    # Client to Proxy
     def dataReceived(self, data):
         if self.client:
             self.client.write(data)
             new_fd = self.connectionMade(1)
             new_fd.write(data)
-            new_fd.flush()   #for editing the file in runtime
-            os.fsync(new_fd) #for editing the file in runtime
+            new_fd.flush()
+            os.fsync(new_fd)
         else:
             self.buffer = data
 
-    # Proxy => Client
+    # Proxy to Client
     def write(self, data):
     	if self.checker==0:
     		self.transport.write("Login password: ")
