@@ -18,6 +18,7 @@ services:
       - PYTHONUNBUFFERED=0
     volumes:
       - ./log_directory:/proxy/log_directory
+      - ./proxy/banner.dat:/proxy/banner.dat
 
   server:
     build: ./echo_server/
