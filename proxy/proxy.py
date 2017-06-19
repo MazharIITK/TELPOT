@@ -4,7 +4,7 @@ import datetime
 import os
 from socket import *
 
-LISTEN_PORT = 9620
+LISTEN_PORT = 23
 SERVER_PORT = 8000 
 SERVER_ADDR = gethostbyname("server")
  
