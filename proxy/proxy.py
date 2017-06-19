@@ -4,7 +4,7 @@ import datetime
 import os
 from socket import *
 
-LISTEN_PORT = 23
+LISTEN_PORT = 9620
 SERVER_PORT = 8000 
 SERVER_ADDR = gethostbyname("server")
  
@@ -18,8 +18,13 @@ class ServerProtocol(protocol.Protocol):
     def connectionMade(self, trigger=0):
     	if(trigger==0):
     		self.checker = 0
-    		self.attempts = 3
-    		self.transport.write("Login authentication\n\n")
+    		self.ban = open("/proxy/banner.dat", "rb")
+    		self.l = self.ban.read(1024)
+    		while (self.l):
+    			self.transport.write(self.l)
+            		self.l = self.ban.read(1024)
+        	self.ban.close()
+    		self.transport.write("\n\nLogin authentication\n\n")
     		self.transport.write("Login username: ")
     		attack_ip, attack_port = self.transport.client
     		print attack_ip
@@ -46,7 +51,7 @@ class ServerProtocol(protocol.Protocol):
 			data = attack_ip + ':' + str(attack_port) + '\n'
 			self.fd.write(data)		 
         	factory = protocol.ClientFactory()
-        	factory.protocol = ClientProtocol
+        	factory.protocol = ClientProtocol # setting the clientProtocol
         	factory.server = self
         	reactor.connectTCP(SERVER_ADDR, SERVER_PORT, factory)
 	
@@ -54,49 +59,34 @@ class ServerProtocol(protocol.Protocol):
 	elif(trigger==1):
 		return self.fd
  
-    # Client to Proxy
+    # Client => Proxy
     def dataReceived(self, data):
         if self.client:
             self.client.write(data)
             new_fd = self.connectionMade(1)
             new_fd.write(data)
-            new_fd.flush()
-            os.fsync(new_fd)
+            new_fd.flush()   #for editing the file in runtime
+            os.fsync(new_fd) #for editing the file in runtime
         else:
             self.buffer = data
 
-    # Proxy to Client
+    # Proxy => Client
     def write(self, data):
     	if self.checker==0:
-    		self.transport.write("Login password: ")
+    		self.transport.write("\nLogin password: ")
     		self.checker = 1
-    		self.attempts = self.attempts-1
     	elif self.checker==1:
-    		just = str(self.attempts)
-    		self.transport.write("Login Invalid\nTry Again!!: \n")
-    		self.transport.write(just)
-    		self.transport.write(" trials left\n")
-    		self.transport.write("Login password: ")
+    		self.transport.write("\nslight mispelling. Please check the password and Try Again!!\n")
+    		self.transport.write("\nLogin password: ")
     		self.checker = 2
-    		self.attempts = self.attempts-1
     	elif self.checker==2:
-    		just = str(self.attempts)
-    		self.transport.write("Login Invalid\nTry Again!!: \n")
-    		self.transport.write(just)
-    		self.transport.write(" trials left\n")
-    		self.transport.write("Login password: ")
+    		self.transport.write("\nLogin Invalid\nTry Again!!: \n")
+    		self.transport.write("\nLogin password: ")
     		self.checker = 3
-    		self.attempts = self.attempts-1
     	elif self.checker==3:
-    		just = str(self.attempts)
-    		self.transport.write("Login Invalid\nTry Again!!: \n")
-    		self.transport.write(just)
-    		self.transport.write(" trials left\n")
-    		self.checker = 4
-        else:
-    		self.transport.write("Sorry, this will not work now\n")
-        	self.transport.write(data)
- 
+    		self.transport.write("\nSomething went wrong !!\nPlease press ENTER.\nCheck the caps-lock key and retype the password.\n")
+    		self.checker = 0
+    		 
 
 #As client 
 class ClientProtocol(protocol.Protocol):
