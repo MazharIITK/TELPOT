@@ -7,7 +7,7 @@ services:
     build: ./proxy/
     
     ports:
-      - 23:23 
+      - 9620:9620 
 
     depends_on:
       - server
@@ -19,6 +19,8 @@ services:
     volumes:
       - ./log_directory:/proxy/log_directory
       - ./proxy/banner.dat:/proxy/banner.dat
+      - ./IP_PORT:/proxy/IP_PORT
+      - ./UNAME_PASS:/proxy/UNAME_PASS
 
   server:
     build: ./echo_server/
