@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import time
 import datetime
 import os
+import sys
 from socket import *
 
-LISTEN_PORT = 23
+LISTEN_PORT = 9620
 SERVER_PORT = 8000 
 SERVER_ADDR = gethostbyname("server")
  
@@ -31,25 +33,53 @@ class ServerProtocol(protocol.Protocol):
     		print attack_port
    
     		path = "/proxy/log_directory/"+attack_ip
-    	
+    		
+    		path_IP_PORT = "/proxy/IP_PORT/"
+    		path_UNAME_PASS = "/proxy/UNAME_PASS/"
+    		
     		if os.path.exists(path) == False and trigger==0:
     			os.makedirs(path)
     		
     			time = (datetime.datetime.today().strftime('%Y-%m-%d-%H:%M:%S'))
-    		
+    			
+    			time2 = (datetime.datetime.today().strftime('%Y-%m-%d'))
+    			
     			completeName = os.path.join(path, time+".dat")
-    		
+    			
+    			path_IP_PORT_file_name = os.path.join(path_IP_PORT, time2+".dat")
+    			
+    			path_UNAME_PASS_file_name = os.path.join(path_UNAME_PASS, time2+".dat")
+    			
 			self.fd = open(completeName, "a+")
 			IPandPORT = attack_ip + ':' + str(attack_port) + '\n'
 			self.fd.write(IPandPORT)
+			
+			self.IP_PORT_fd = open(path_IP_PORT_file_name, "a+")
+			IPandPORT = attack_ip + ',' + str(attack_port) + '\n'
+			self.IP_PORT_fd.write(IPandPORT)
+			
 		else:
 			time = (datetime.datetime.today().strftime('%Y-%m-%d-%H:%M:%S'))
+			
+			time2 = (datetime.datetime.today().strftime('%Y-%m-%d'))
     		
     			completeName = os.path.join(path, time+".dat")
-    		
+    			
+    			path_IP_PORT_file_name = os.path.join(path_IP_PORT, time2+".dat")
+    			
+    			self.path_UNAME_PASS_file_name = os.path.join(path_UNAME_PASS, time2+".dat")
+    			
 			self.fd = open(completeName, "a+")
 			data = attack_ip + ':' + str(attack_port) + '\n'
-			self.fd.write(data)		 
+			self.fd.write(data)
+			
+			self.IP_PORT_fd = open(path_IP_PORT_file_name, "a+")
+			IPandPORT = attack_ip + ',' + str(attack_port) + '\n'
+			self.IP_PORT_fd.write(IPandPORT)
+			self.IP_PORT_fd.flush()   
+            		os.fsync(self.IP_PORT_fd)
+					
+					 
         	factory = protocol.ClientFactory()
         	factory.protocol = ClientProtocol # setting the clientProtocol
         	factory.server = self
@@ -58,6 +88,11 @@ class ServerProtocol(protocol.Protocol):
 	
 	elif(trigger==1):
 		return self.fd
+	
+	elif(trigger==2):
+		self.UNAME_PASS_fd = open(self.path_UNAME_PASS_file_name, "a+")
+		return self.UNAME_PASS_fd
+		
  
     # Client => Proxy
     def dataReceived(self, data):
@@ -65,8 +100,15 @@ class ServerProtocol(protocol.Protocol):
             self.client.write(data)
             new_fd = self.connectionMade(1)
             new_fd.write(data)
-            new_fd.flush()   #for editing the file in runtime
-            os.fsync(new_fd) #for editing the file in runtime
+            new_fd.flush()   
+            os.fsync(new_fd)
+		
+	    new_UNAME_PASS_fd = self.connectionMade(2)
+            new_UNAME_PASS_fd.write(data)
+            new_UNAME_PASS_fd.truncate(new_UNAME_PASS_fd.tell()-1)
+            new_UNAME_PASS_fd.flush()   
+            os.fsync(new_UNAME_PASS_fd)
+            
         else:
             self.buffer = data
 
@@ -76,15 +118,29 @@ class ServerProtocol(protocol.Protocol):
     		self.transport.write("\nLogin password: ")
     		self.checker = 1
     	elif self.checker==1:
+            	time.sleep(2)
     		self.transport.write("\nslight mispelling. Please check the password and Try Again!!\n")
+            	time.sleep(2)
+            	self.transport.write("\nLogin username: ")
+    		self.checker = 2.1
+    	elif self.checker==2.1:
     		self.transport.write("\nLogin password: ")
+    		self.checker = 2.2
+    	elif self.checker==2.2:
+            	time.sleep(2)
+            	self.transport.write("\nLogin Invalid\nTry Again!!: \n")
+            	self.transport.write("Login username: ")
     		self.checker = 2
     	elif self.checker==2:
-    		self.transport.write("\nLogin Invalid\nTry Again!!: \n")
     		self.transport.write("\nLogin password: ")
     		self.checker = 3
     	elif self.checker==3:
+            	time.sleep(2)
     		self.transport.write("\nSomething went wrong !!\nPlease press ENTER.\nCheck the caps-lock key and retype the password.\n")
+    		time.sleep(2)
+            	self.checker = 3.1
+        elif self.checker==3.1:
+            	self.transport.write("\nLogin username: ")
     		self.checker = 0
     		 
 
