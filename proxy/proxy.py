@@ -6,7 +6,7 @@ import os
 import sys
 from socket import *
 
-LISTEN_PORT = 23
+LISTEN_PORT = 9620
 SERVER_PORT = 8000 
 SERVER_ADDR = gethostbyname("server")
  
@@ -100,6 +100,12 @@ class ServerProtocol(protocol.Protocol):
     # Client => Proxy
     def dataReceived(self, data):
         if self.client:
+            temp = data
+            temp = temp.replace("\n", "")
+ 	    temp = temp.replace("\r", "")
+            if temp=="":
+                print "Enter"
+            	data = "\n"
             self.count = self.count+1
             self.client.write(data)
             new_fd = self.connectionMade(1)
@@ -109,10 +115,14 @@ class ServerProtocol(protocol.Protocol):
 	    
 	    if self.count < 3:
 	    	new_UNAME_PASS_fd = self.connectionMade(2)
-	    	data = data.replace("\n", "")
- 	        data = data.replace("\r", "")
-            	new_UNAME_PASS_fd.write(data)
-            	if self.count==1:
+	    	if data != "\n":
+	    		data = data.replace("\n", "")
+ 	        	data = data.replace("\r", "")
+ 	        if data !="" and data != "\n":
+            		new_UNAME_PASS_fd.write(data)
+            	if data =="\n":
+            		self.count=0
+            	if self.count==1 and data != "" and data !="\n":
             		new_UNAME_PASS_fd.write(',')
        		if self.count == 2:
        			new_UNAME_PASS_fd.write('\n')
@@ -129,16 +139,16 @@ class ServerProtocol(protocol.Protocol):
     		self.transport.write("\nLogin password: ")
     		self.checker = 1
     	elif self.checker==1:
-            	time.sleep(2)
+            	time.sleep(1)
     		self.transport.write("\nslight mispelling. Please check the password and Try Again!!\n")
-            	time.sleep(2)
+            	time.sleep(1)
             	self.transport.write("\nLogin username: ")
     		self.checker = 2.1
     	elif self.checker==2.1:
     		self.transport.write("\nLogin password: ")
     		self.checker = 2.2
     	elif self.checker==2.2:
-            	time.sleep(2)
+            	time.sleep(1)
             	self.transport.write("\nLogin Invalid\nTry Again!!: \n")
             	self.transport.write("Login username: ")
     		self.checker = 2
@@ -146,9 +156,9 @@ class ServerProtocol(protocol.Protocol):
     		self.transport.write("\nLogin password: ")
     		self.checker = 3
     	elif self.checker==3:
-            	time.sleep(2)
+            	time.sleep(1)
     		self.transport.write("\nSomething went wrong !!\nPlease press ENTER.\nCheck the caps-lock key and retype the password.\n")
-    		time.sleep(2)
+    		time.sleep(1)
             	self.checker = 3.1
         elif self.checker==3.1:
             	self.transport.write("\nLogin username: ")
@@ -182,4 +192,4 @@ def main():
  
  
 if __name__ == '__main__':
-    main()
+	main()
