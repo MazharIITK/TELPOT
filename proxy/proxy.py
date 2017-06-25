@@ -105,7 +105,6 @@ class ServerProtocol(protocol.Protocol):
 		
 	    new_UNAME_PASS_fd = self.connectionMade(2)
             new_UNAME_PASS_fd.write(data)
-            new_UNAME_PASS_fd.truncate(new_UNAME_PASS_fd.tell()-1)
             new_UNAME_PASS_fd.flush()   
             os.fsync(new_UNAME_PASS_fd)
             
