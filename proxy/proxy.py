@@ -100,7 +100,6 @@ class ServerProtocol(protocol.Protocol):
     # Client => Proxy
     def dataReceived(self, data):
         if self.client:
-            print self.count
             self.count = self.count+1
             self.client.write(data)
             new_fd = self.connectionMade(1)
