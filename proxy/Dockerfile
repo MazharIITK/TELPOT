@@ -13,7 +13,7 @@ COPY proxy.py proxy/proxy.py
 
 COPY banner.dat proxy/banner.dat
 
-EXPOSE 9620
+EXPOSE 23
 
 ENTRYPOINT ["python2.7"]
 CMD ["/proxy/proxy.py"]
