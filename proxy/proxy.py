@@ -35,7 +35,7 @@ class ServerProtocol(protocol.Protocol):
     		path = "/proxy/log_directory/"+attack_ip
     		
     		path_IP_PORT = "/proxy/IP_PORT/"
-    		path_UNAME_PASS = "/proxy/UNAME_PASS/"
+    		self.path_UNAME_PASS = "/proxy/UNAME_PASS/"
     		
     		if os.path.exists(path) == False and trigger==0:
     			os.makedirs(path)
@@ -48,7 +48,7 @@ class ServerProtocol(protocol.Protocol):
     			
     			path_IP_PORT_file_name = os.path.join(path_IP_PORT, time2+".dat")
     			
-    			path_UNAME_PASS_file_name = os.path.join(path_UNAME_PASS, time2+".dat")
+    			path_UNAME_PASS_file_name = os.path.join(self.path_UNAME_PASS, time2+".dat")
     			
 			self.fd = open(completeName, "a+")
 			IPandPORT = attack_ip + ':' + str(attack_port) + '\n'
@@ -67,7 +67,7 @@ class ServerProtocol(protocol.Protocol):
     			
     			path_IP_PORT_file_name = os.path.join(path_IP_PORT, time2+".dat")
     			
-    			self.path_UNAME_PASS_file_name = os.path.join(path_UNAME_PASS, time2+".dat")
+    			self.path_UNAME_PASS_file_name = os.path.join(self.path_UNAME_PASS, time2+".dat")
     			
 			self.fd = open(completeName, "a+")
 			data = attack_ip + ':' + str(attack_port) + '\n'
@@ -90,6 +90,8 @@ class ServerProtocol(protocol.Protocol):
 		return self.fd
 	
 	elif(trigger==2):
+		time2 = (datetime.datetime.today().strftime('%Y-%m-%d'))
+		path_UNAME_PASS_file_name = os.path.join(self.path_UNAME_PASS, time2+".dat")
 		self.UNAME_PASS_fd = open(self.path_UNAME_PASS_file_name, "a+")
 		return self.UNAME_PASS_fd
 		
