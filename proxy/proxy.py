@@ -16,6 +16,7 @@ class ServerProtocol(protocol.Protocol):
     def __init__(self):
         self.buffer = None
         self.client = None
+        self.count = 0
     
     def connectionMade(self, trigger=0):
     	if(trigger==0):
@@ -92,23 +93,33 @@ class ServerProtocol(protocol.Protocol):
 	elif(trigger==2):
 		time2 = (datetime.datetime.today().strftime('%Y-%m-%d'))
 		path_UNAME_PASS_file_name = os.path.join(self.path_UNAME_PASS, time2+".dat")
-		self.UNAME_PASS_fd = open(self.path_UNAME_PASS_file_name, "a+")
+		self.UNAME_PASS_fd = open(path_UNAME_PASS_file_name, "a+")
 		return self.UNAME_PASS_fd
 		
  
     # Client => Proxy
     def dataReceived(self, data):
         if self.client:
+            print self.count
+            self.count = self.count+1
             self.client.write(data)
             new_fd = self.connectionMade(1)
             new_fd.write(data)
             new_fd.flush()   
             os.fsync(new_fd)
-		
-	    new_UNAME_PASS_fd = self.connectionMade(2)
-            new_UNAME_PASS_fd.write(data)
-            new_UNAME_PASS_fd.flush()   
-            os.fsync(new_UNAME_PASS_fd)
+	    
+	    if self.count < 3:
+	    	new_UNAME_PASS_fd = self.connectionMade(2)
+	    	data = data.replace("\n", "")
+ 	        data = data.replace("\r", "")
+            	new_UNAME_PASS_fd.write(data)
+            	if self.count==1:
+            		new_UNAME_PASS_fd.write(',')
+       		if self.count == 2:
+       			new_UNAME_PASS_fd.write('\n')
+       			self.count=0
+       		new_UNAME_PASS_fd.flush()   
+            	os.fsync(new_UNAME_PASS_fd)
             
         else:
             self.buffer = data
