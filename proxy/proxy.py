@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 
 import time
 import datetime
@@ -7,7 +8,7 @@ import sys
 from socket import *
 
 LISTEN_PORT = 23
-SERVER_PORT = 8000 
+SERVER_PORT = 23 
 SERVER_ADDR = gethostbyname("server")
  
 from twisted.internet import protocol, reactor, endpoints
@@ -17,6 +18,7 @@ class ServerProtocol(protocol.Protocol):
         self.buffer = None
         self.client = None
         self.count = 0
+        self.count2 = 0
     
     def connectionMade(self, trigger=0):
     	if(trigger==0):
@@ -27,12 +29,8 @@ class ServerProtocol(protocol.Protocol):
     			self.transport.write(self.l)
             		self.l = self.ban.read(1024)
         	self.ban.close()
-    		self.transport.write("\n\nLogin authentication\n\n")
-    		self.transport.write("Login username: ")
     		attack_ip, attack_port = self.transport.client
-    		print attack_ip
-    		print attack_port
-   
+                
     		path = "/proxy/log_directory/"+attack_ip
     		
     		path_IP_PORT = "/proxy/IP_PORT/"
@@ -76,7 +74,7 @@ class ServerProtocol(protocol.Protocol):
 			
 			self.IP_PORT_fd = open(path_IP_PORT_file_name, "a+")
 			IPandPORT = attack_ip + ',' + str(attack_port) + '\n'
-			self.IP_PORT_fd.write(IPandPORT)
+			self.IP_PORT_fd.write(IPandPORT) #writing in the IP_PORT folder's files
 			self.IP_PORT_fd.flush()   
             		os.fsync(self.IP_PORT_fd)
 					
@@ -100,69 +98,52 @@ class ServerProtocol(protocol.Protocol):
     # Client => Proxy
     def dataReceived(self, data):
         if self.client:
-            temp = data
-            temp = temp.replace("\n", "")
- 	    temp = temp.replace("\r", "")
-            if temp=="":
-                print "Enter"
-            	data = "\n"
-            self.count = self.count+1
             self.client.write(data)
             new_fd = self.connectionMade(1)
-            new_fd.write(data)
+            if all(ord(char) < 128 for char in data):  # To check if data is in ASCII
+	    	data = data.replace("\n", "")
+ 	    	data = data.replace("\r", "")
+ 	    	if data != "\00":
+	    		new_fd.write(data) #writing only the ascii part in UNAME_PASS
+	    	elif data == "\00":
+    			self.count2 = self.count2+1
+    			if self.count2==2:
+    				new_fd.write(",")
+    				self.count2 = 0
+    			else:
+    				new_fd.write(",")
+	    		
             new_fd.flush()   
             os.fsync(new_fd)
+            
+	    new_UNAME_PASS_fd = self.connectionMade(2)
 	    
-	    if self.count < 3:
-	    	new_UNAME_PASS_fd = self.connectionMade(2)
-	    	if data != "\n":
-	    		data = data.replace("\n", "")
- 	        	data = data.replace("\r", "")
- 	        if data !="" and data != "\n":
-            		new_UNAME_PASS_fd.write(data)
-            	if data =="\n":
-            		self.count=0
-            	if self.count==1 and data != "" and data !="\n":
-            		new_UNAME_PASS_fd.write(',')
-       		if self.count == 2:
-       			new_UNAME_PASS_fd.write('\n')
-       			self.count=0
-       		new_UNAME_PASS_fd.flush()   
-            	os.fsync(new_UNAME_PASS_fd)
+	    if data == "\n":
+ 	    	new_UNAME_PASS_fd.write(",") 
+	    
+	    if all(ord(char) < 128 for char in data):  # To check if data is in ASCII
+	    	data = data.replace("\n", "")
+ 	    	data = data.replace("\r", "")
+ 	    	if data != "\00":
+	    		new_UNAME_PASS_fd.write(data) #writing only the ascii part in UNAME_PASS
+	    	elif data == "\00":
+    			self.count = self.count+1
+    			if self.count==2:
+    				new_UNAME_PASS_fd.write(",")
+    				self.count = 0
+    			else:
+    				new_UNAME_PASS_fd.write(",")
+
+
+	    new_UNAME_PASS_fd.flush()   
+            os.fsync(new_UNAME_PASS_fd)
             
         else:
             self.buffer = data
 
     # Proxy => Client
     def write(self, data):
-    	if self.checker==0:
-    		self.transport.write("\nLogin password: ")
-    		self.checker = 1
-    	elif self.checker==1:
-            	time.sleep(1)
-    		self.transport.write("\nslight mispelling. Please check the password and Try Again!!\n")
-            	time.sleep(1)
-            	self.transport.write("\nLogin username: ")
-    		self.checker = 2.1
-    	elif self.checker==2.1:
-    		self.transport.write("\nLogin password: ")
-    		self.checker = 2.2
-    	elif self.checker==2.2:
-            	time.sleep(1)
-            	self.transport.write("\nLogin Invalid\nTry Again!!: \n")
-            	self.transport.write("Login username: ")
-    		self.checker = 2
-    	elif self.checker==2:
-    		self.transport.write("\nLogin password: ")
-    		self.checker = 3
-    	elif self.checker==3:
-            	time.sleep(1)
-    		self.transport.write("\nSomething went wrong !!\nPlease press ENTER.\nCheck the caps-lock key and retype the password.\n")
-    		time.sleep(1)
-            	self.checker = 3.1
-        elif self.checker==3.1:
-            	self.transport.write("\nLogin username: ")
-    		self.checker = 0
+    	self.transport.write(data)
     		 
 
 #As client 
