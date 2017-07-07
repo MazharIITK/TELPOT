@@ -14,21 +14,16 @@ This TELPOT is generic and easy to modify accordingly.
 **How to run TELPOT ?**
 
 _Steps:_ (Run TELPOT using container linking)
-1) Build the telnet_server in the directory Telnet_Server using docker command:  docker build -t server Telnet_Server/
-             
-2) Run the telnet server:  docker run -d --name server -t server
- 
-3) Restart the server in the server container:  docker exec -t server /etc/init.d/xinetd restart
-
-4) Build the proxy in the directory proxy using docker command:  docker build -t proxy proxy/
-             
-4) Run the proxy:  docker run --name proxy -p 23:23 --link server:server -v $PWD/log_directory:/proxy/log_directory -v $PWD/IP_PORT:/proxy/IP_PORT -v $PWD/UNAME_PASS:/proxy/UNAME_PASS -d -t proxy
-             
-TELPOT is running now.
-
-**Note:** You can directly run the TELPOT using docker-compose by the command:
-              1) docker-compose build
-              2) docker-compose up
+1) Build the telnet_server in the directory Telnet_Server using docker command:  docker build -t server Telnet_Server/    
+2) Run the telnet server:  docker run -d --name server -t server    
+3) Restart the server in the server container:  docker exec -t server /etc/init.d/xinetd restart    
+4) Build the proxy in the directory proxy using docker command:  docker build -t proxy proxy/    
+4) Run the proxy:  docker run --name proxy -p 23:23 --link server:server -v $PWD/log_directory:/proxy/log_directory -v $PWD/IP_PORT:/proxy/IP_PORT -v $PWD/UNAME_PASS:/proxy/UNAME_PASS -d -t proxy    
+TELPOT is running now.    
+**Note:**    
+You can directly run the TELPOT using docker-compose by the command:    
+1) docker-compose build    
+2) docker-compose up
 
 _Read below for more information_
 ---------------------------------------------------------------------------------------------------------------------------------
