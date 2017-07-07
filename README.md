@@ -26,4 +26,6 @@ The major contributions in this project work includes:
 
 3. Capturing the drive-by-download based attacks and analysing those captured malwares.
 
+Note: Note: The biggest catch by TELPOT was a clever attacker who downloaded a Mirai variant piece by piece to fool antivirus and was reported to VirusTotal for the first time.
+
 Link To My Presentation: https://prezi.com/view/Xt0RLRvUItKyBRmy5QCE/
