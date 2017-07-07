@@ -9,23 +9,24 @@ This whole record was accessed remotely through the _specially-designated direct
 -> The _docker-compose_ file will run the echo-server at the backend. However , that can be easily replaced by any other server of our own choice. There is another directory TELNET_SERVER which contains the Dockerfile for running Telnet-Server. That was also tested with TELPOT.
 This TELPOT is generic and easy to modify accordingly.
 
-**----------------------------------------------------------------------------------------------------------------------------**
+**-----------------------------------------------------------------**
+
 **How to run TELPOT ? **
 _Steps:_ (Run TELPOT using container linking)
 1) Build the telnet_server in the directory Telnet_Server using docker command:
-             **docker build -t server Telnet_Server/**
+             docker build -t server Telnet_Server/
              
 2) Run the telnet server:
-             **docker run -d --name server -t server**
+             docker run -d --name server -t server
  
 3) Restart the server in the server container:
-            **docker exec -t server /etc/init.d/xinetd restart**
+            docker exec -t server /etc/init.d/xinetd restart
 
 4) Build the proxy in the directory proxy using docker command:
-             **docker build -t proxy proxy/**
+             docker build -t proxy proxy/
              
 4) Run the proxy 
-             **docker run --name proxy -p 23:23 --link server:server -v $PWD/log_directory:/proxy/log_directory -v $PWD/IP_PORT:/proxy/IP_PORT -v $PWD/UNAME_PASS:/proxy/UNAME_PASS -d -t proxy**
+             docker run --name proxy -p 23:23 --link server:server -v $PWD/log_directory:/proxy/log_directory -v $PWD/IP_PORT:/proxy/IP_PORT -v $PWD/UNAME_PASS:/proxy/UNAME_PASS -d -t proxy
              
 TELPOT is running now.
 
