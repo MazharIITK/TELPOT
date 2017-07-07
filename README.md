@@ -11,7 +11,8 @@ This TELPOT is generic and easy to modify accordingly.
 
 **-----------------------------------------------------------------**
 
-**How to run TELPOT ? **
+**How to run TELPOT ?**
+
 _Steps:_ (Run TELPOT using container linking)
 1) Build the telnet_server in the directory Telnet_Server using docker command:
              docker build -t server Telnet_Server/
